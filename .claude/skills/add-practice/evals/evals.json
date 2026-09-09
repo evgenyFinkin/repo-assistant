@@ -1,0 +1,23 @@
+{
+  "skill_name": "add-practice",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a new practice to practices.md. Name: 'Docker Development'. Description: 'All builds are done inside docker container, if no container exists build one. Orchestration is done using a compose.yaml file. When inside agent is working inside the container give him all permissions. Remove container when done.' Link: none. Examples: none.",
+      "expected_output": "practices.md updated with new Docker Development practice section before the last updated footer",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Add a new practice to practices.md. Name: 'Atomic Commits'. Description: 'Each commit should represent one logical change. Commit message must be clear and reference the feature branch. Use imperative mood (e.g., Add X, Fix Y, Remove Z). Keep commits small enough to review in one sitting.' Link: https://www.conventionalcommits.org/. Examples: none.",
+      "expected_output": "practices.md updated with Atomic Commits practice including reference link to conventional commits",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Add a new practice to practices.md. Name: 'Type Safety'. Description: 'All code must include type hints. Backend uses mypy for type checking. Frontend uses strict TypeScript with noImplicitAny enabled. Types prevent runtime errors and improve code clarity.' Link: none. Examples: Use Python example: 'def process_data(data: dict[str, Any]) -> list[str]:' and TypeScript example: 'function fetchUser(id: string): Promise<User> {'",
+      "expected_output": "practices.md updated with Type Safety practice including code examples for both Python and TypeScript",
+      "files": []
+    }
+  ]
+}
