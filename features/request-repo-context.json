@@ -32,10 +32,10 @@
   "implementationNotes": "GitHub API rate limits: 60 req/hr unauthenticated, 5000 req/hr with token. For MVP (ephemeral), use public endpoint without auth. When building, mock GitHub API for tests. Error responses should include suggestion (e.g., 'URL format should be https://github.com/owner/repo'). Consider caching repo metadata briefly if same repo requested multiple times in session.",
   "status": {
     "created": "2026-09-10T00:00:00Z",
-    "lastUpdated": "2026-09-10T12:30:00Z",
+    "lastUpdated": "2026-09-10T13:00:00Z",
     "phase": "Complete",
     "progress": "100%",
-    "completedOn": "2026-09-10T12:30:00Z",
-    "notes": "Full implementation with GitHub REST API client, async repo fetching, error handling, and comprehensive tests. Backend handles URL validation, metadata + file tree fetch, status tracking. Frontend can poll for progress."
+    "completedOn": "2026-09-10T13:00:00Z",
+    "notes": "Full implementation + tested end-to-end. GitHub REST API client (no clone). Async background fetch. URL validation. Error handling (404, 403, timeouts). Job status tracking (PENDING→CLONING→PARSING→READY). Tests: 23/23 pass in Docker. Issues found and fixed: (1) test mocks (AsyncMock for sync .json()), (2) event loop handling for async tasks, (3) vite proxy localhost bug (use compose service name). Verified against real repo (evgenyFinkin/repo-assistant): 77 files indexed, status updates working through frontend proxy."
   }
 }
