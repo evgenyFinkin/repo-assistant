@@ -1,7 +1,7 @@
 """Tests for GitHub API client."""
 import pytest
 import httpx
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.services.github_api import (
     GitHubAPIClient,
@@ -10,6 +10,16 @@ from app.services.github_api import (
     GitHubRateLimitError,
     GitHubConnectionError,
 )
+
+
+def _mock_response(status_code: int, json_data=None, text: str = "") -> AsyncMock:
+    """Build a mock httpx.Response. `.json()` is sync in httpx, so it must be
+    a plain MagicMock, not AsyncMock (which would return an unawaited coroutine)."""
+    resp = AsyncMock()
+    resp.status_code = status_code
+    resp.text = text
+    resp.json = MagicMock(return_value=json_data)
+    return resp
 
 
 @pytest.mark.asyncio
@@ -30,15 +40,8 @@ async def test_fetch_repo_metadata_success():
     }
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = mock_response
-        mock_get.return_value = mock_resp
-
-        async with httpx.AsyncClient() as client_ctx:
-            with patch.object(client_ctx, "get", new_callable=AsyncMock) as mock_method:
-                mock_method.return_value = mock_resp
-                result = await client.fetch_repo_metadata("owner", "awesome-project")
+        mock_get.return_value = _mock_response(200, json_data=mock_response)
+        result = await client.fetch_repo_metadata("owner", "awesome-project")
 
     assert result["name"] == "awesome-project"
     assert result["language"] == "Python"
@@ -52,16 +55,12 @@ async def test_fetch_repo_metadata_not_found():
     client = GitHubAPIClient()
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 404
-        mock_resp.text = "Not Found"
-        mock_get.return_value = mock_resp
+        mock_get.return_value = _mock_response(404, text="Not Found")
 
         with pytest.raises(GitHubRepositoryNotFoundError) as exc_info:
-            async with httpx.AsyncClient():
-                await client.fetch_repo_metadata("owner", "nonexistent")
+            await client.fetch_repo_metadata("owner", "nonexistent")
 
-        assert "not found" in str(exc_info.value).lower()
+    assert "not found" in str(exc_info.value).lower()
 
 
 @pytest.mark.asyncio
@@ -70,14 +69,10 @@ async def test_fetch_repo_metadata_rate_limited():
     client = GitHubAPIClient()
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 403
-        mock_resp.text = "API rate limit exceeded"
-        mock_get.return_value = mock_resp
+        mock_get.return_value = _mock_response(403, text="API rate limit exceeded")
 
         with pytest.raises(GitHubRateLimitError):
-            async with httpx.AsyncClient():
-                await client.fetch_repo_metadata("owner", "repo")
+            await client.fetch_repo_metadata("owner", "repo")
 
 
 @pytest.mark.asyncio
@@ -87,28 +82,20 @@ async def test_fetch_repo_metadata_connection_error():
 
     with patch("httpx.AsyncClient.get", side_effect=httpx.RequestError("Connection failed")):
         with pytest.raises(GitHubConnectionError):
-            async with httpx.AsyncClient():
-                await client.fetch_repo_metadata("owner", "repo")
+            await client.fetch_repo_metadata("owner", "repo")
 
 
 @pytest.mark.asyncio
 async def test_fetch_repo_readme_success():
     """Test successful README fetch."""
     client = GitHubAPIClient()
-
     readme_content = "# Awesome Project\n\nThis is a great project."
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 200
-        mock_resp.text = readme_content
-        mock_get.return_value = mock_resp
+        mock_get.return_value = _mock_response(200, text=readme_content)
+        result = await client.fetch_repo_readme("owner", "repo")
 
-        async with httpx.AsyncClient():
-            result = await client.fetch_repo_readme("owner", "repo")
-
-    # Note: result will be None due to mock setup, but function logic is correct
-    assert result is None or isinstance(result, str)
+    assert result == readme_content
 
 
 @pytest.mark.asyncio
@@ -117,12 +104,8 @@ async def test_fetch_repo_readme_not_found():
     client = GitHubAPIClient()
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 404
-        mock_get.return_value = mock_resp
-
-        async with httpx.AsyncClient():
-            result = await client.fetch_repo_readme("owner", "repo")
+        mock_get.return_value = _mock_response(404)
+        result = await client.fetch_repo_readme("owner", "repo")
 
     assert result is None
 
@@ -146,13 +129,8 @@ async def test_fetch_file_tree_success():
     }
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = mock_tree
-        mock_get.return_value = mock_resp
-
-        async with httpx.AsyncClient():
-            result = await client.fetch_file_tree("owner", "repo")
+        mock_get.return_value = _mock_response(200, json_data=mock_tree)
+        result = await client.fetch_file_tree("owner", "repo")
 
     # node_modules should be filtered out
     assert len(result) == 3
@@ -165,14 +143,10 @@ async def test_fetch_file_tree_not_found():
     client = GitHubAPIClient()
 
     with patch("httpx.AsyncClient.get") as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.status_code = 404
-        mock_resp.text = "Not Found"
-        mock_get.return_value = mock_resp
+        mock_get.return_value = _mock_response(404, text="Not Found")
 
         with pytest.raises(GitHubRepositoryNotFoundError):
-            async with httpx.AsyncClient():
-                await client.fetch_file_tree("owner", "repo", ref="nonexistent-branch")
+            await client.fetch_file_tree("owner", "repo", ref="nonexistent-branch")
 
 
 def test_client_with_token():
