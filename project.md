@@ -44,6 +44,17 @@ Open-source developers and maintainers spend significant time:
 - Issue tracking integration
 - Code search across organizations
 
+## Planned Features
+
+### MVP Phase 1
+
+1. **request-repo** — Accept GitHub URL, fetch from API, validate, return repo data
+   - Status: ✓ Complete
+   - Location: `features/request-repo/`
+   - Implementation: GitHub REST API client, async fetching, status tracking
+   - Tests: `test_github_api.py`, `test_repo_analysis.py`
+   - API: `POST /api/repositories`, `GET /api/repositories/{id}/status`
+
 ---
 
 **Status:** Project initialization

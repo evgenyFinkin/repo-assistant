@@ -1,0 +1,41 @@
+{
+  "name": "Request Repo",
+  "description": "Accept GitHub repository URL from client, fetch repo content from GitHub API, validate and prepare for analysis",
+  "projectAlignment": "Core MVP feature. Implements 'User-friendly onboarding: Accept GitHub URL, handle cloning and analysis automatically' from project goals. Replaces manual cloning with API-based fetching to reduce resource usage.",
+  "acceptanceCriteria": [
+    "Accept valid public GitHub repo URLs (https://github.com/owner/repo format)",
+    "Fetch repo metadata from GitHub API (readme, license, description, structure)",
+    "Retrieve file tree and content from GitHub API without cloning",
+    "Validate URL format and handle invalid inputs with clear error messages",
+    "Handle GitHub API errors (404 not found, rate limits, connection timeouts) with user-facing messages",
+    "Return structured response with repo metadata, file tree, and analysis-ready data",
+    "No size limits initially; scale as needed"
+  ],
+  "technicalDesign": {
+    "architecture": "Stateless request handler. Client submits URL → Backend validates → Calls GitHub API → Returns repo data. Uses GitHub REST API (no cloning required). Follows project pattern: isolated request, structured response.",
+    "fileStructure": {
+      "description": "Request handler code, types, tests",
+      "directories": [
+        "src/handlers/ — Request validation and GitHub API calls",
+        "src/types/ — TypeScript types for GitHub API responses",
+        "src/utils/ — URL validation, error formatting",
+        "tests/ — Unit tests for validation, API call mocking"
+      ]
+    },
+    "keyDecisions": {
+      "no-cloning": "GitHub REST API used instead of git clone. Reduces server resources, faster initial response, aligns with 'scalable processing' goal.",
+      "public-only": "MVP constraint from project.md. Authentication/token handling deferred to future phase.",
+      "error-handling": "Structured error responses with user-friendly messages. GitHub API errors translated to actionable feedback.",
+      "stateless": "No persistence layer. Each request independent. Aligns with MVP 'ephemeral sessions' goal."
+    }
+  },
+  "implementationNotes": "GitHub API rate limits: 60 req/hr unauthenticated, 5000 req/hr with token. For MVP (ephemeral), use public endpoint without auth. When building, mock GitHub API for tests. Error responses should include suggestion (e.g., 'URL format should be https://github.com/owner/repo'). Consider caching repo metadata briefly if same repo requested multiple times in session.",
+  "status": {
+    "created": "2026-09-10T00:00:00Z",
+    "lastUpdated": "2026-09-10T12:30:00Z",
+    "phase": "Complete",
+    "progress": "100%",
+    "completedOn": "2026-09-10T12:30:00Z",
+    "notes": "Full implementation with GitHub REST API client, async repo fetching, error handling, and comprehensive tests. Backend handles URL validation, metadata + file tree fetch, status tracking. Frontend can poll for progress."
+  }
+}

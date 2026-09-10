@@ -1,4 +1,8 @@
-"""Repository intake + analysis status endpoints (Story 1, Story 2)."""
+"""Repository intake + analysis status endpoints (Story 1, Story 2).
+
+Story 1: Accept GitHub URL, validate format, fetch repo data from GitHub API.
+Story 2: Background job to analyze repo (triggered on /repositories POST).
+"""
 from fastapi import APIRouter, HTTPException
 
 from app.models.schemas import (
@@ -14,10 +18,19 @@ router = APIRouter()
 
 @router.post("/repositories", response_model=RepositoryCreateResponse)
 async def create_repository(payload: RepositoryCreateRequest) -> RepositoryCreateResponse:
-    """Accept a GitHub URL and kick off clone + analysis.
+    """Accept a GitHub URL and start background analysis.
 
-    TODO: validate URL format + public accessibility (Story 1 acceptance criteria).
-    TODO: trigger LangGraph analysis workflow as a background job (Story 2).
+    Validates URL format, fetches repo metadata from GitHub API without cloning,
+    and returns a job ID for polling analysis status.
+
+    Args:
+        payload: Request containing GitHub repo URL
+
+    Returns:
+        Job ID and initial PENDING status
+
+    Raises:
+        HTTPException 400: Invalid URL format
     """
     try:
         repo_id = repo_analysis.start_analysis(payload.url)
