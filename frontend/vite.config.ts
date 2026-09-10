@@ -6,7 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:8000",
+      // Frontend runs in its own container (compose.yml); "localhost" here
+      // would mean the frontend container itself, not the backend. Use the
+      // compose service name so container-to-container requests resolve.
+      "/api": process.env.VITE_API_PROXY_TARGET ?? "http://backend:8000",
     },
   },
 });
