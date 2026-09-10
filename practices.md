@@ -92,6 +92,14 @@ docker-compose -f docker-compose.prod.yml up
 
 Write code and run tests exclusively inside docker containers. When done, remove container. Use compose.yml for container orchestration. If no .dockerfile exists, create it. Grant yourself all available permissions when working inside container.
 
+## BDD & TDD development
+
+When adding new feature to the code, ask BDD questions in order to write tests. Also build end to end tests for TDD development. Tests are performed in parallel by a weak agent (Haiku 4.5), and results are passed to a strong executing agent (sonnet 5).
+
+**Examples:**
+
+When asked to add a healthcheck feature to the backend, ask BDD questions like: who is checking, what does he expect, etc.
+
 ## Decision Log
 
 Major architectural decisions documented in `docs/adr/` (Architecture Decision Records).
